@@ -319,8 +319,8 @@ h2 {
   }
   .balance {
     grid-column: 1;
-    flex-direction: column;
-    align-items: flex-start;
+    /* flex-direction: column; */
+    /* align-items: flex-start; */
     gap: 0.5rem;
     margin-bottom: 0;
   }

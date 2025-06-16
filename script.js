@@ -297,3 +297,7 @@ btnSort.addEventListener('click', function (e) {
   displayMovements(currentAccount.movements, !isSorted);
   isSorted = !isSorted;
 })
+
+window.onload = function () {
+  inputLoginUsername.focus();
+}
