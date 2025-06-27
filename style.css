@@ -128,6 +128,10 @@ nav {
   font-size: 4.5rem;
   font-weight: 400;
 }
+.date {
+  font-weight: 500;
+  font-size: 14px;
+}
 /* MOVEMENTS */
 .movements {
   grid-row: 2 / span 3;
@@ -152,7 +156,7 @@ nav {
 }
 .movements__date {
   font-size: 1.1rem;
-  text-transform: uppercase;
+  text-transform: capitalize;
   font-weight: 500;
   color: #666;
 }
