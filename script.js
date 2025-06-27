@@ -124,6 +124,46 @@ const account6 = {
 const accounts = [account1, account2, account3, account4, account5, account6];
 console.log(accounts);
 
+// Exchange currency
+const exchangeRates = [
+  { from: 'EUR', to: 'USD', rate: 1.09 },
+  { from: 'EUR', to: 'GBP', rate: 0.85 },
+  { from: 'EUR', to: 'CAD', rate: 1.47 },
+  { from: 'EUR', to: 'EGP', rate: 52.50 },
+  { from: 'EUR', to: 'SAR', rate: 4.09 },
+
+  { from: 'USD', to: 'EUR', rate: 0.92 },
+  { from: 'USD', to: 'GBP', rate: 0.78 },
+  { from: 'USD', to: 'CAD', rate: 1.35 },
+  { from: 'USD', to: 'EGP', rate: 48.0 },
+  { from: 'USD', to: 'SAR', rate: 3.75 },
+
+  { from: 'GBP', to: 'EUR', rate: 1.18 },
+  { from: 'GBP', to: 'USD', rate: 1.28 },
+  { from: 'GBP', to: 'CAD', rate: 1.72 },
+  { from: 'GBP', to: 'EGP', rate: 61.0 },
+  { from: 'GBP', to: 'SAR', rate: 4.8 },
+
+  { from: 'CAD', to: 'EUR', rate: 0.68 },
+  { from: 'CAD', to: 'USD', rate: 0.74 },
+  { from: 'CAD', to: 'GBP', rate: 0.58 },
+  { from: 'CAD', to: 'EGP', rate: 35.0 },
+  { from: 'CAD', to: 'SAR', rate: 2.78 },
+
+  { from: 'EGP', to: 'EUR', rate: 1 / 52.5 },
+  { from: 'EGP', to: 'USD', rate: 1 / 48.0 },
+  { from: 'EGP', to: 'GBP', rate: 1 / 61.0 },
+  { from: 'EGP', to: 'CAD', rate: 1 / 35.0 },
+  { from: 'EGP', to: 'SAR', rate: 0.077 },
+
+  { from: 'SAR', to: 'EUR', rate: 1 / 4.09 },
+  { from: 'SAR', to: 'USD', rate: 1 / 3.75 },
+  { from: 'SAR', to: 'GBP', rate: 1 / 4.8 },
+  { from: 'SAR', to: 'CAD', rate: 1 / 2.78 },
+  { from: 'SAR', to: 'EGP', rate: 1 / 0.077 },
+];
+
+
 // Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
@@ -276,6 +316,23 @@ const startLogoutTimer = function () {
   const timer = setInterval(tick, 1000);
   return timer;
 };
+
+// Determine conversion rate based on currencies
+const convertCurrency = (amount, fromCurrency, toCurrency) => {
+  if (fromCurrency === toCurrency) return amount;
+
+  const rate = exchangeRates.find(
+    r => r.from === fromCurrency && r.to === toCurrency)?.rate;
+  console.log('rate:', rate);
+
+  if (!rate) {
+    alert(`⚠️ No exchange rate found from ${fromCurrency} to ${toCurrency}`);
+    return null;
+  }
+
+  return amount * rate;
+};
+
 ///////////////////////////////////////
 
 // Display pop message
@@ -375,9 +432,17 @@ btnTransfer.addEventListener('click', function (e) {
     && currentAccount.balance >= amount
     && receiveAcc?.username !== currentAccount.username
   ) {
+    const convertedAmount = convertCurrency(
+      amount,
+      currentAccount.currency,
+      receiveAcc.currency
+    );
+
+    if (convertedAmount === null) return;
+
     // Doing the transfer
     currentAccount.movements.push(-amount);
-    receiveAcc.movements.push(amount);
+    receiveAcc.movements.push(convertedAmount);
 
     // Add transfer date
     currentAccount.movementsDates.push(now.toISOString());
