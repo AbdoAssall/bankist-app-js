@@ -143,6 +143,7 @@ const btnTransfer = document.querySelector('.form__btn--transfer');
 const btnLoan = document.querySelector('.form__btn--loan');
 const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
+const btnCanceLoan = document.querySelector('.btn--cancel-loan');
 
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
@@ -153,6 +154,14 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 const formatMovmentDate = function (date, locale = navigator.language) {
+  // Calc days passed
+  const calcDaysPassed = (date1, date2) => Math.round((date1 - date2) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDaysPassed(now, date);
+
+  if (daysPassed <= 7) {
+    return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-daysPassed, 'day');
+  };
 
   return new Intl.DateTimeFormat(locale).format(date);
 };
@@ -179,7 +188,7 @@ const displayMovements = function (acc, sort = false) {
 
     const formatDate = new Date(date);
 
-    const displayDate = formatMovmentDate(formatDate, acc.locale)
+    const displayDate = formatMovmentDate(formatDate, acc.locale);
     const formatedMov = formatCurrency(movement, acc?.locale, acc?.currency);
 
     const html = `
@@ -337,6 +346,10 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiveAcc.movements.push(amount);
 
+    // Add transfer date
+    currentAccount.movementsDates.push(now.toISOString());
+    receiveAcc.movementsDates.push(now.toISOString());
+
     //* Desplay successful message
     correctMessage(`${amount}€ successfully transferred to ${receiveAcc.owner} 😎`)
 
@@ -369,6 +382,9 @@ btnLoan.addEventListener('click', function (e) {
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movment
     currentAccount.movements.push(amount);
+
+    // Add loan date
+    currentAccount.movementsDates.push(now.toISOString());
 
     // Update UI
     updateUI(currentAccount);
@@ -419,4 +435,4 @@ btnSort.addEventListener('click', function (e) {
 
 window.onload = function () {
   inputLoginUsername.focus();
-}
+};
