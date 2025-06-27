@@ -249,6 +249,35 @@ const updateUI = (acc) => {
   calcDisplaySummary(acc);
 }
 
+const startLogoutTimer = function () {
+  // Set time to 5 minutes
+  let time = 300;
+  const tick = () => {
+    const min = String(Math.floor(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+    // In each call, print the remaining time to UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    // When 0 seconds, stop the timer and log out user
+    if (time === 0) {
+      clearInterval(time);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+      successMessage(`You have been logged out due to inactivity. Please log in again.`, 'operation--transfer');
+    };
+
+    // Decrese time by 1s
+    time--
+  };
+
+  // Call the timer every second
+  tick(); // Display the initial time immediately
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
+///////////////////////////////////////
+
 // Display pop message
 let popTimeout;
 const wrongMessage = function (message) {
@@ -272,11 +301,11 @@ const wrongMessage = function (message) {
   }, 5000)
 }
 
-const correctMessage = function (message) {
+const successMessage = function (message, style = 'operation--loan') {
   // 1. Display error message (POP)
   pop.classList.remove('operation--close');
   pop.classList.remove('hide');
-  pop.classList.add('operation--loan');
+  pop.classList.add(style);
   pop.classList.add('show');
 
   // 2. Error message
@@ -287,12 +316,12 @@ const correctMessage = function (message) {
   popTimeout = setTimeout(() => {
     pop.classList.add('hide');
     pop.classList.remove('show');
-    pop.classList.remove('operation--loan');
+    pop.classList.remove(style);
   }, 5000)
 }
 
 // Event handler
-let currentAccount;
+let currentAccount, timer;
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submiting
@@ -318,6 +347,10 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    // Clear timer
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
 
     // Update UI
     updateUI(currentAccount);
@@ -351,10 +384,14 @@ btnTransfer.addEventListener('click', function (e) {
     receiveAcc.movementsDates.push(now.toISOString());
 
     //* Desplay successful message
-    correctMessage(`${amount}€ successfully transferred to ${receiveAcc.owner} 😎`)
+    successMessage(`${amount}€ successfully transferred to ${receiveAcc.owner} 😎`)
 
     // Update UI
     updateUI(currentAccount);
+
+    // Reset timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
   } else {
     //* Desplay wrong message
     const getErrorMessage = () => {
@@ -374,32 +411,64 @@ btnTransfer.addEventListener('click', function (e) {
   }
 })
 
+let loanTimer;
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
   const amount = +inputLoanAmount.value;
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // Add movment
-    currentAccount.movements.push(amount);
+    // Show cancel loan btn
+    btnCanceLoan.style.display = 'inline-block';
 
-    // Add loan date
-    currentAccount.movementsDates.push(now.toISOString());
+    loanTimer = setTimeout(() => {
+      // Add movment
+      currentAccount.movements.push(amount);
 
-    // Update UI
-    updateUI(currentAccount);
+      // Add loan date
+      currentAccount.movementsDates.push(now.toISOString());
 
-    // Clear input fields
-    inputLoanAmount.value = '';
+      // Update UI
+      updateUI(currentAccount);
 
-    //* Desplay successful message
-    correctMessage(`Your loan ${amount}€ has been accepted 🤑`);
+      // Clear input fields
+      inputLoanAmount.value = '';
+
+      // hide cancel loan btn after excution
+      btnCanceLoan.style.display = 'none';
+
+      // Reset timer
+      clearInterval(timer);
+      timer = startLogoutTimer();
+
+      //* Desplay successful message
+      successMessage(`Your loan ${amount}€ has been accepted 🤑`);
+    }, 2500);
   } else {
     //* Desplay wrong message
     wrongMessage(`Your loan ${amount}€ has not been accepted 😭`);
   }
 })
 
+// Cancel loan
+btnCanceLoan.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (loanTimer) {
+    clearTimeout(loanTimer);
+    loanTimer = null; // Reset the timer
+    successMessage('Loan request has been canceled successfully 😕');
+
+    // hide cancel loan btn
+    btnCanceLoan.style.display = 'none';
+    inputLoanAmount.value = '';
+
+    // Reset timer
+    clearInterval(timer);
+    timer = startLogoutTimer();
+  }
+});
+
+// Close Account
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
 
@@ -414,7 +483,7 @@ btnClose.addEventListener('click', function (e) {
     containerApp.style.opacity = 0;
 
     //* Desplay successful message
-    correctMessage(`Your account has been deleted successfully 😢`)
+    successMessage(`Your account has been deleted successfully 😢`)
   } else {
     //* Desplay successful message
     if (inputCloseUsername.value !== currentAccount.username || +inputClosePin.value !== currentAccount.pin) {
@@ -431,6 +500,10 @@ btnSort.addEventListener('click', function (e) {
   e.preventDefault();
   displayMovements(currentAccount, !isSorted);
   isSorted = !isSorted;
+
+  // Reset timer
+  clearInterval(timer);
+  timer = startLogoutTimer();
 });
 
 window.onload = function () {
