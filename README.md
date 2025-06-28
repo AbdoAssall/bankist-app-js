@@ -49,6 +49,8 @@ A modern, interactive banking application built using **JavaScript**. The **Bank
 * 👩‍💼 **User:** `jd`, **Pin:** `2222`
 * 👩‍💼 **User:** `stw`, **Pin:** `3333`
 * 👩‍💼 **User:** `ss`, **Pin:** `4444`
+* 👩‍💼 **User:** `am`, **Pin:** `5555`
+* 👩‍💼 **User:** `Fas`, **Pin:** `6666`
 
 ---
 
